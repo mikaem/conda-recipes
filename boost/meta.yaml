@@ -23,7 +23,6 @@ requirements:
     - zlib
     - gcc ==4.8.5
 
->>>>>>> master
   run:
     # python dependency is here due to libboost-python library that depends on
     # python version
