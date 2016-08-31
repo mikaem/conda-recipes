@@ -8,14 +8,17 @@ source:
   md5: d340dc3d8a03f549ae29488d737b9c30
 
 build:
-  number: 2
+  number: {{CONDA_BUILD_NUMBER}}
 
   track_features:
     - openblas
 
 requirements:
+  build:
+    - gcc ==4.8.5
+
   run:
-    - libgcc
+    - libgcc ==4.8.5
 
 about:
   home: http://xianyi.github.io/OpenBLAS/

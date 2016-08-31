@@ -4,8 +4,8 @@ mkdir build
 cd build
 
 if [ `uname` == Linux ]; then
-    CC=gcc44
-    CXX=g++44
+    CC=gcc
+    CXX=g++
     PY_LIB="libpython${PY_VER}.so"
 
     cmake .. \
@@ -14,6 +14,9 @@ if [ `uname` == Linux ]; then
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
         -DCMAKE_INSTALL_RPATH:STRING="${PREFIX}/lib" \
+        -DCMAKE_C_FLAGS=-DGLX_GLXEXT_LEGACY \
+        -DCMAKE_CXX_FLAGS=-DGLX_GLXEXT_LEGACY \
+        -DVTK_WRAP_TCL:BOOL=OFF \
         -DBUILD_DOCUMENTATION=OFF \
         -DVTK_HAS_FEENABLEEXCEPT=OFF \
         -DBUILD_TESTING=OFF \
@@ -25,7 +28,9 @@ if [ `uname` == Linux ]; then
         -DPYTHON_LIBRARY=${PREFIX}/lib/${PY_LIB} \
         -DVTK_INSTALL_PYTHON_MODULE_DIR=${SP_DIR} \
         -DModule_vtkRenderingMatplotlib=ON \
-        -DVTK_USE_X=ON
+        -DVTK_USE_X=ON \
+        -DVTK_PYTHON_SETUP_ARGS:STRING="--prefix=. --root=${PREFIX} --single-version-externally-managed"
+
 fi
 
 if [ `uname` == Darwin ]; then
@@ -42,7 +47,6 @@ if [ `uname` == Darwin ]; then
         -DVTK_USE_TK=OFF \
         -DIOKit:FILEPATH=${SDK_PATH}/System/Library/Frameworks/IOKit.framework \
         -DVTK_USE_COCOA=ON \
-        -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX="$PREFIX" \
         -DCMAKE_INSTALL_RPATH:STRING="$PREFIX/lib" \
         -DBUILD_DOCUMENTATION=OFF \
@@ -61,3 +65,12 @@ fi
 
 make -j${CPU_COUNT}
 make install
+
+if [ `uname` == Linux ]; then
+    mv $PREFIX/lib/vtk-5.10/lib* $PREFIX/lib
+    sed -i 's/\/lib\/vtk-5.10\/lib/\/lib\/lib/g' $PREFIX/lib/vtk-5.10/VTKTargets-release.cmake
+fi
+
+if [ `uname` == Darwin ]; then
+    $SYS_PYTHON $RECIPE_DIR/osx.py
+fi

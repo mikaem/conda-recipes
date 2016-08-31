@@ -1,7 +1,7 @@
 package:
   name: boost
   version: 1.60.0
-
+  
 source:
   fn:  boost_1_60_0.tar.bz2
   url: http://sourceforge.net/projects/boost/files/boost/1.60.0/boost_1_60_0.tar.bz2
@@ -22,7 +22,8 @@ requirements:
     - bzip2             [unix]
     - zlib
     - gcc ==4.8.5
- 
+
+>>>>>>> master
   run:
     # python dependency is here due to libboost-python library that depends on
     # python version
