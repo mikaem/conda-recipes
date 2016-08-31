@@ -43,7 +43,7 @@ if [ "$(uname)" == "Darwin" ]; then
 fi
 
 if [ "$(uname)" == "Linux" ]; then
-    echo "using gcc : : ${PREFIX}/bin/g++ ; " >> tools/build/src/user-config.jam
+    echo "using gcc : : /usr/bin/g++ ; " >> tools/build/src/user-config.jam
 
     ./bootstrap.sh \
         --prefix="${PREFIX}" \

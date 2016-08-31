@@ -1,29 +1,61 @@
 #!/usr/bin/env bash
-# inspired by build script for Arch Linux fftw pacakge:
-# https://projects.archlinux.org/svntogit/packages.git/tree/trunk/PKGBUILD?h=packages/fftw
 
-CONFIGURE="./configure --prefix=$PREFIX --enable-shared --enable-threads --disable-fortran"
+# Depending on our platform, shared libraries end with either .so or .dylib
+if [[ `uname` == 'Darwin' ]]; then
+    export LIBRARY_SEARCH_VAR=DYLD_FALLBACK_LIBRARY_PATH
+    export DYLIB_EXT=dylib
+    export CC=clang
+    export CXX=clang++
+    export CXXFLAGS="-stdlib=libc++"
+    export CXX_LDFLAGS="-stdlib=libc++"
+else
+    export LIBRARY_SEARCH_VAR=LD_LIBRARY_PATH
+    export DYLIB_EXT=so
+    export CC=gcc
+    export CXX=g++
+fi
 
-# Single precision (fftw libraries have "f" suffix)
-$CONFIGURE --enable-float --enable-sse --enable-avx
-make
-make install
+export LDFLAGS="-L${PREFIX}/lib"
+export CFLAGS="${CFLAGS} -I${PREFIX}/include"
 
-# Long double precision (fftw libraries have "l" suffix)
-$CONFIGURE --enable-long-double
-make
-make install
+CONFIGURE="./configure --prefix=$PREFIX --with-pic --enable-shared --enable-threads --disable-fortran"
 
-# Double precision (fftw libraries have no precision suffix)
-$CONFIGURE --enable-sse2 --enable-avx
-make
-make install
+# (Note exported LDFLAGS and CFLAGS vars provided above.)
+BUILD_CMD="make -j${CPU_COUNT}"
+INSTALL_CMD="make install"
 
 # Test suite
 # tests are performed during building as they are not available in the
 # installed package.
-# Additional tests can be run with make smallcheck and make bigcheck
-cd tests && make check-local
-# Additional tests can be run using the next two lines
-#make smallcheck
-#make bigcheck
+# Additional tests can be run with "make smallcheck" and "make bigcheck"
+TEST_CMD="eval cd tests && ${LIBRARY_SEARCH_VAR}=\"$PREFIX/lib\" make check-local && cd -"
+
+#
+# We build 3 different versions of fftw:
+#
+build_cases=(
+    # single
+    "$CONFIGURE --enable-float --enable-sse --enable-sse2 --enable-avx"
+    # double
+    "$CONFIGURE --enable-sse2 --enable-avx"
+    # long double (SSE2 and AVX not supported)
+    "$CONFIGURE --enable-long-double"
+)
+
+for config in "${build_cases[@]}"
+do
+    :
+    $config
+    ${BUILD_CMD}
+    ${INSTALL_CMD}
+    ${TEST_CMD}
+done
+
+unset LIBRARY_SEARCH_VAR
+unset DYLIB_EXT
+unset CC
+unset CXX
+unset CXXFLAGS
+unset CXX_LDFLAGS
+unset LDFLAGS
+unset CFLAGS
