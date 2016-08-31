@@ -8,6 +8,8 @@ source:
   md5: 65a840e1a0b13a558ff19eeb2c4f0cbe
 
 build:
+  number: {{CONDA_BUILD_NUMBER}}
+
   features:
     - vc9               [win and py27]
     - vc10              [win and py34]
@@ -19,7 +21,8 @@ requirements:
     - icu               [unix]
     - bzip2             [unix]
     - zlib
-
+    - gcc ==4.8.5
+ 
   run:
     # python dependency is here due to libboost-python library that depends on
     # python version
